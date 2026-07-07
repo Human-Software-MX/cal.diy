@@ -14,7 +14,7 @@ fi
 
 echo "Esperando a que la web responda (migraciones Prisma corren al arrancar)..."
 for i in $(seq 1 60); do
-  code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3050/auth/login || true)
+  code=$(curl -sL -o /dev/null -w '%{http_code}' http://localhost:3050/auth/login || true)
   if [ "$code" = "200" ]; then echo "OK: http://35.188.238.30:3050 responde 200"; exit 0; fi
   sleep 10
 done
