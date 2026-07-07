@@ -9,9 +9,24 @@ Fork de [cal.diy](https://github.com/Human-Software-MX/cal.diy) (MIT) para agend
 | Dev | VM GCP `agora` (35.188.238.30, us-east4-a), repo en `~/cal.diy` | Web: http://35.188.238.30:3050 · API v2: http://35.188.238.30:3053/api/v2 |
 | Local (Mac) | `~/cal.diy` con `docker-compose.yml` raíz | http://localhost:3000 |
 
-Regla de empresa: deploy SIEMPRE Docker (+ Easypanel). Este stack corre como compose independiente en la VM dev; la adopción al panel de Easypanel queda pendiente (requiere acceso al panel — el stack ya sigue el mismo patrón contenedor + traefik-ready).
+## Easypanel (deploy oficial, 2026-07-06)
 
-## Stack en la VM dev
+cal.diy corre como servicios del proyecto **`agora`** en el panel de Easypanel de la VM (no fue posible un proyecto propio: la licencia limita a 3 proyectos):
+
+| Servicio | Tipo | Detalle |
+|----------|------|---------|
+| `caldiy-web` | app | source git → `Dockerfile` raíz, puerto host 3050→3000 |
+| `caldiy-api` | app | source git → `apps/api/v2/Dockerfile`, puerto host 3053→80 |
+| `caldiy-db` | postgres:17 | db `calendso`, user `postgres` |
+| `caldiy-redis` | redis:alpine | password generado por el panel (`redis://default:<pw>@agora_caldiy-redis:6379`) |
+
+Para re-deployar: botón Deploy en el panel (clona `main` de GitHub y reconstruye). Gotchas aprendidos:
+- El source **github** (tarball) falla con este repo por tamaño — usar source **git** (clone).
+- `updateSourceGit` vía API **resetea el build config** — re-aplicar el Dockerfile después.
+- `zeroDowntime` debe ir en `false`: con puertos en modo host la tarea nueva nunca puede tomar el puerto (deadlock en Pending).
+- La API v2 exige `STRIPE_API_KEY`/`STRIPE_WEBHOOK_SECRET` (placeholders) y `REDIS_URL` con el password del panel.
+
+## Stack compose manual (alternativa/fallback, detenido)
 
 ```bash
 cd ~/cal.diy
