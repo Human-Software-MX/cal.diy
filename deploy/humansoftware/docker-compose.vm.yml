@@ -1,0 +1,94 @@
+# Stack de cal.diy para la VM dev de Humansoftware (GCP 35.188.238.30).
+# Uso: docker compose -f deploy/humansoftware/docker-compose.vm.yml --env-file deploy/humansoftware/.env up -d
+# El puerto 3050 (web) y 3053 (API v2) se publican en el host; el firewall de GCP debe permitirlos.
+
+name: caldiy
+
+volumes:
+  caldiy-db-data:
+  caldiy-redis-data:
+
+networks:
+  caldiy:
+
+services:
+  caldiy-db:
+    image: postgres:17
+    restart: always
+    volumes:
+      - caldiy-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - caldiy
+
+  caldiy-redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - caldiy-redis-data:/data
+    networks:
+      - caldiy
+
+  caldiy-web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_WEBAPP_URL: ${NEXT_PUBLIC_WEBAPP_URL}
+        NEXT_PUBLIC_API_V2_URL: ${NEXT_PUBLIC_API_V2_URL}
+        NEXT_PUBLIC_LICENSE_CONSENT: ${NEXT_PUBLIC_LICENSE_CONSENT}
+        CALCOM_TELEMETRY_DISABLED: ${CALCOM_TELEMETRY_DISABLED}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+        CALENDSO_ENCRYPTION_KEY: ${CALENDSO_ENCRYPTION_KEY}
+        DATABASE_URL: ${DATABASE_URL}
+    image: humansoftware/caldiy-web:latest
+    restart: always
+    ports:
+      - "3050:3000"
+    env_file: .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_DIRECT_URL=${DATABASE_URL}
+      - DATABASE_HOST=caldiy-db:5432
+    networks:
+      - caldiy
+    depends_on:
+      - caldiy-db
+      - caldiy-redis
+
+  caldiy-api:
+    build:
+      context: ../..
+      dockerfile: apps/api/v2/Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        DATABASE_DIRECT_URL: ${DATABASE_URL}
+    image: humansoftware/caldiy-api:latest
+    restart: always
+    ports:
+      - "3053:80"
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - API_PORT=80
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_READ_URL=${DATABASE_URL}
+      - DATABASE_WRITE_URL=${DATABASE_URL}
+      - DATABASE_DIRECT_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+      - API_KEY_PREFIX=cal_
+      - WEB_APP_URL=${NEXT_PUBLIC_WEBAPP_URL}
+      - IS_E2E=false
+      - REWRITE_API_V2_PREFIX=true
+    networks:
+      - caldiy
+    depends_on:
+      - caldiy-db
+      - caldiy-redis
+    profiles:
+      - api
