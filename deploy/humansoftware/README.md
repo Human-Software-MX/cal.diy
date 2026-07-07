@@ -40,9 +40,9 @@ docker compose -f deploy/humansoftware/docker-compose.vm.yml --env-file deploy/h
 
 | Feature | Estado en el fork |
 |---------|-------------------|
-| Webhooks (BOOKING_*) | SÍ — schema, `packages/features/webhooks` completo |
-| Teams (COLLECTIVE / ROUND_ROBIN / MANAGED) | SÍ — enum en schema, `getLuckyUser.ts` presente; falta validar UI end-to-end |
-| Seats (`seatsPerTimeSlot`) | SÍ en schema — falta validar flujo de booking con capacidad |
+| Webhooks (BOOKING_*) | SÍ — schema, `packages/features/webhooks` y router tRPC `viewer/webhook` completos |
+| Seats (`seatsPerTimeSlot`) | SÍ — schema + `packages/features/bookings/lib/handleSeats/` completo (crítico CEA: presente) |
+| Teams (COLLECTIVE / ROUND_ROBIN / MANAGED) | PARCIAL — enum en schema y motor `getLuckyUser.ts` sobreviven, pero NO hay router tRPC de teams ni UI (sin rutas de settings ni módulos web). Re-implementar capa API/UI desde cero |
 | Routing forms | NO — solo quedan migraciones de DB, el código de app fue removido |
 | `packages/features/ee` | NO existe (removido) — algunas referencias en CLAUDE.md del repo están obsoletas |
 | API v2 | SÍ — `apps/api/v2` con Dockerfile propio |
