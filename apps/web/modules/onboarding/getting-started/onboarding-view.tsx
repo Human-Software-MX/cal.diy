@@ -123,6 +123,11 @@ export const OnboardingView = ({ userEmail }: OnboardingViewProps) => {
     if (plan.id === "organization") {
       return false;
     }
+    // TSK-45: the teams flow was removed upstream (/onboarding/teams/details 404s);
+    // hide the option until we re-implement teams from scratch
+    if (plan.id === "team") {
+      return false;
+    }
     return true;
   });
 
