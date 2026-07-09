@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
@@ -14,6 +14,8 @@ import { showToast } from "@calcom/ui/components/toast";
 const CreateTeamView = () => {
   const { t } = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const utils = trpc.useUtils();
 
   const [name, setName] = useState("");
@@ -25,7 +27,7 @@ const CreateTeamView = () => {
     onSuccess: async (team) => {
       showToast(t("team_created_successfully"), "success");
       await utils.viewer.teams.list.invalidate();
-      router.push(`/settings/teams/${team.id}/members`);
+      router.push(returnTo ?? `/settings/teams/${team.id}/members`);
     },
     onError: (err) => {
       showToast(err.message, "error");

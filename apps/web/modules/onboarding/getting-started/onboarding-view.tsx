@@ -80,7 +80,7 @@ export const OnboardingView = ({ userEmail }: OnboardingViewProps) => {
       } else if (selectedPlan === "team") {
         // El onboarding dedicado de equipos no existe en este fork; enviamos al
         // flujo de creación de equipo reimplementado (settings) que sí funciona.
-        router.push("/settings/teams/new");
+        router.push("/settings/teams/new?returnTo=/onboarding/personal/settings");
       } else if (selectedPlan === "personal") {
         router.push("/onboarding/personal/settings");
       }

@@ -40,7 +40,10 @@ export function useRedirectToOnboardingIfNeeded() {
 
   const shouldRedirectToOnboarding = user && shouldShowOnboarding(user);
   // Don't redirect if already on an onboarding page (works for both old [[...step]] and v3 flows)
-  const isOnOnboardingPage = pathname?.startsWith("/onboarding/") || pathname?.startsWith("/getting-started");
+  const isOnOnboardingPage =
+    pathname?.startsWith("/onboarding/") ||
+    pathname?.startsWith("/getting-started") ||
+    pathname?.startsWith("/settings/teams"); // parte del flujo de onboarding de equipo
   const canRedirect =
     !isLoading && shouldRedirectToOnboarding && !needsEmailVerification && !isOnOnboardingPage;
 
