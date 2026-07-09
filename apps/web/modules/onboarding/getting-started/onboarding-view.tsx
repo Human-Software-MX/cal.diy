@@ -78,7 +78,9 @@ export const OnboardingView = ({ userEmail }: OnboardingViewProps) => {
       if (selectedPlan === "organization") {
         router.push("/onboarding/organization/details");
       } else if (selectedPlan === "team") {
-        router.push("/onboarding/teams/details");
+        // El onboarding dedicado de equipos no existe en este fork; enviamos al
+        // flujo de creación de equipo reimplementado (settings) que sí funciona.
+        router.push("/settings/teams/new");
       } else if (selectedPlan === "personal") {
         router.push("/onboarding/personal/settings");
       }
@@ -123,11 +125,8 @@ export const OnboardingView = ({ userEmail }: OnboardingViewProps) => {
     if (plan.id === "organization") {
       return false;
     }
-    // TSK-45: the teams flow was removed upstream (/onboarding/teams/details 404s);
-    // hide the option until we re-implement teams from scratch
-    if (plan.id === "team") {
-      return false;
-    }
+    // TSK-45: teams reimplementado desde cero en este fork; "Con mi equipo" ahora
+    // lleva al flujo de creación de equipo en /settings/teams/new.
     return true;
   });
 
