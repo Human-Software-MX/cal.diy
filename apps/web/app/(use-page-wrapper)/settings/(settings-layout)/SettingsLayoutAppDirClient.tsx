@@ -296,7 +296,12 @@ const useTabs = ({
   const session = useSession();
   const { data: user } = trpc.viewer.me.get.useQuery({ includePasswordAdded: true });
   const orgBranding = null as { id?: number; slug?: string; name?: string; logoUrl?: string | null } | null;
-  const isAdmin = session.data?.user.role === UserPermissionRole.ADMIN;
+  // El rol puede no venir en la sesión NextAuth (token viejo), pero el query
+  // viewer.me sí lo trae desde la DB — por eso el banner de admin sí aparece.
+  // Usamos ambas fuentes para que la sección Admin (Usuarios, Flags, etc.) no
+  // quede oculta a un admin real.
+  const isAdmin =
+    session.data?.user.role === UserPermissionRole.ADMIN || user?.role === UserPermissionRole.ADMIN;
 
   const processTabsMemod = useMemo(() => {
     const processedTabs = getTabs(orgBranding).map((tab) => {
