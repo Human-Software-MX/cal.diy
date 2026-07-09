@@ -1,5 +1,6 @@
 import authedProcedure from "../../../procedures/authedProcedure";
 import { router } from "../../../trpc";
+import { ZAcceptInviteInputSchema } from "./acceptInvite.schema";
 import { ZCreateTeamInputSchema } from "./create.schema";
 import { ZGetTeamInputSchema } from "./get.schema";
 import { ZInviteMemberInputSchema } from "./inviteMember.schema";
@@ -45,5 +46,10 @@ export const teamsRouter = router({
   removeMember: authedProcedure.input(ZRemoveMemberInputSchema).mutation(async ({ ctx, input }) => {
     const { removeMemberHandler } = await import("./removeMember.handler");
     return removeMemberHandler({ ctx, input });
+  }),
+
+  acceptInvite: authedProcedure.input(ZAcceptInviteInputSchema).mutation(async ({ ctx, input }) => {
+    const { acceptInviteHandler } = await import("./acceptInvite.handler");
+    return acceptInviteHandler({ ctx, input });
   }),
 });

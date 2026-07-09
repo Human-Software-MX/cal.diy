@@ -10,11 +10,23 @@ import { Avatar } from "@calcom/ui/components/avatar";
 import { Badge } from "@calcom/ui/components/badge";
 import { Button } from "@calcom/ui/components/button";
 import { EmptyScreen } from "@calcom/ui/components/empty-screen";
+import { showToast } from "@calcom/ui/components/toast";
 
 const TeamsListView = () => {
   const { t } = useLocale();
   const router = useRouter();
+  const utils = trpc.useUtils();
   const { data: teams, isPending } = trpc.viewer.teams.list.useQuery();
+
+  const acceptMutation = trpc.viewer.teams.acceptInvite.useMutation({
+    onSuccess: async () => {
+      showToast(t("accept_invitation"), "success");
+      await utils.viewer.teams.list.invalidate();
+    },
+    onError: (err) => {
+      showToast(err.message, "error");
+    },
+  });
 
   return (
     <SettingsHeader
@@ -54,11 +66,20 @@ const TeamsListView = () => {
               <div className="flex items-center gap-2">
                 {!team.accepted && <Badge variant="orange">{t("pending")}</Badge>}
                 <Badge variant="gray">{t(team.role.toLowerCase())}</Badge>
-                <Button
-                  color="secondary"
-                  onClick={() => router.push(`/settings/teams/${team.id}/members`)}>
-                  {t("manage")}
-                </Button>
+                {!team.accepted ? (
+                  <Button
+                    color="primary"
+                    loading={acceptMutation.isPending}
+                    onClick={() => acceptMutation.mutate({ teamId: team.id })}>
+                    {t("accept")}
+                  </Button>
+                ) : (
+                  <Button
+                    color="secondary"
+                    onClick={() => router.push(`/settings/teams/${team.id}/members`)}>
+                    {t("manage")}
+                  </Button>
+                )}
               </div>
             </li>
           ))}
