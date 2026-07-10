@@ -15,7 +15,7 @@ const CreateTeamView = () => {
   const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnTo = searchParams.get("returnTo");
+  const returnTo = searchParams?.get("returnTo") ?? null;
   const utils = trpc.useUtils();
 
   const [name, setName] = useState("");
