@@ -54,7 +54,17 @@ const TeamMembersView = ({ teamId }: { teamId: number }) => {
       title={team?.name ?? t("team_members")}
       description={t("team_members_description")}
       backButton
-      onBackButtonClick={() => router.push("/settings/teams")}>
+      onBackButtonClick={() => router.push("/settings/teams")}
+      CTA={
+        canManage ? (
+          <Button
+            color="secondary"
+            href={`/settings/teams/${teamId}/webhooks`}
+            StartIcon="link">
+            Webhooks
+          </Button>
+        ) : undefined
+      }>
       {canManage && (
         <div className="border-subtle bg-default mb-6 flex flex-col gap-3 rounded-md border p-4 sm:flex-row sm:items-end">
           <div className="flex-1">

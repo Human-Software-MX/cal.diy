@@ -39,7 +39,17 @@ export const createHandler = async ({ ctx, input }: CreateOptions) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  if (!input.platform && !input.eventTypeId) {
+  if (input.teamId) {
+    const membership = await prisma.membership.findUnique({
+      where: { userId_teamId: { userId: user.id, teamId: input.teamId } },
+      select: { role: true, accepted: true },
+    });
+    if (!membership?.accepted || !["ADMIN", "OWNER"].includes(membership.role)) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "Debes ser admin o dueño del equipo" });
+    }
+  }
+
+  if (!input.platform && !input.eventTypeId && !input.teamId) {
     webhookData.user = { connect: { id: user.id } };
   }
 

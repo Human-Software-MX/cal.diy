@@ -1458,11 +1458,21 @@ async function handler(
     length: dayjs(reqBody.end).diff(dayjs(reqBody.start), "minutes"),
   };
 
+  // Collect team IDs for webhook fan-out: use the event type's own team
+  // (for team event types) or every accepted team the organizer belongs to
+  // (for individual event types), so team-level webhooks fire regardless of
+  // which member receives the booking.
+  const organizerTeamIds = await deps.prismaClient.membership
+    .findMany({ where: { userId: organizerUser.id, accepted: true }, select: { teamId: true } })
+    .then((ms) => ms.map((m) => m.teamId));
+
+  const bookingTeamIds: number[] = eventType.teamId ? [eventType.teamId] : organizerTeamIds;
+
   const subscriberOptions: GetSubscriberOptions = {
     userId: organizerUser.id,
     eventTypeId,
     triggerEvent: WebhookTriggerEvents.BOOKING_CREATED,
-    teamId: null,
+    teamId: bookingTeamIds,
     orgId: null,
     oAuthClientId: platformClientId,
   };
@@ -1477,7 +1487,7 @@ async function handler(
     userId: organizerUser.id,
     eventTypeId,
     triggerEvent: WebhookTriggerEvents.MEETING_ENDED,
-    teamId: null,
+    teamId: bookingTeamIds,
     orgId: null,
     oAuthClientId: platformClientId,
   };
@@ -1486,7 +1496,7 @@ async function handler(
     userId: organizerUser.id,
     eventTypeId,
     triggerEvent: WebhookTriggerEvents.MEETING_STARTED,
-    teamId: null,
+    teamId: bookingTeamIds,
     orgId: null,
     oAuthClientId: platformClientId,
   };
@@ -2312,7 +2322,7 @@ async function handler(
       userId: organizerUser.id,
       eventTypeId,
       triggerEvent: WebhookTriggerEvents.BOOKING_PAYMENT_INITIATED,
-      teamId: null,
+      teamId: bookingTeamIds,
       orgId: null,
       oAuthClientId: platformClientId,
     };
@@ -2503,7 +2513,7 @@ async function handler(
         triggerForUser: true,
         organizerUser: { id: organizerUser.id },
         eventTypeId,
-        teamId: null,
+        teamId: bookingTeamIds.length ? bookingTeamIds : null,
         orgId: null,
         isDryRun,
       });

@@ -515,7 +515,7 @@ export class WebhookRepository implements IWebhookRepository {
    * - Permission-based team filtering
    */
   async listWebhooks(options: ListWebhooksOptions): Promise<Webhook[]> {
-    const { userId, appId, eventTypeId, eventTriggers } = options;
+    const { userId, teamId: filterTeamId, appId, eventTypeId, eventTriggers } = options;
 
     // Build WHERE conditions
     const whereConditions: NonNullable<Prisma.WebhookWhereInput["AND"]> = [
@@ -536,6 +536,19 @@ export class WebhookRepository implements IWebhookRepository {
       } else {
         whereConditions.push({ eventTypeId });
       }
+    } else if (filterTeamId) {
+      // Explicit team filter: return only webhooks for that team (user must have read access)
+      const permissionService = new PermissionCheckService();
+      const ok = await permissionService.checkPermission({
+        userId,
+        teamId: filterTeamId,
+        permission: "webhook.read",
+        fallbackRoles: [MembershipRole.ADMIN, MembershipRole.OWNER],
+      });
+      if (!ok) {
+        return [];
+      }
+      whereConditions.push({ teamId: filterTeamId });
     } else {
       // No eventTypeId - filter by user and their allowed teams
       const permissionService = new PermissionCheckService();
