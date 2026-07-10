@@ -45,7 +45,7 @@ const TeamWebhooksView = ({ teamId }: { teamId: number }) => {
       setSecret("");
       setSelectedEvents(["BOOKING_CREATED"]);
       setShowForm(false);
-      await utils.viewer.webhooks.list.invalidate({ teamId });
+      await utils.viewer.webhook.list.invalidate({ teamId });
     },
     onError: (err) => showToast(err.message, "error"),
   });
@@ -53,7 +53,7 @@ const TeamWebhooksView = ({ teamId }: { teamId: number }) => {
   const deleteMutation = trpc.viewer.webhook.delete.useMutation({
     onSuccess: async () => {
       showToast("Webhook eliminado", "success");
-      await utils.viewer.webhooks.list.invalidate({ teamId });
+      await utils.viewer.webhook.list.invalidate({ teamId });
     },
     onError: (err) => showToast(err.message, "error"),
   });
