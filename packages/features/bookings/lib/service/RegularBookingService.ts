@@ -2513,7 +2513,7 @@ async function handler(
         triggerForUser: true,
         organizerUser: { id: organizerUser.id },
         eventTypeId,
-        teamId: bookingTeamIds.length ? bookingTeamIds : null,
+        teamId: bookingTeamIds.length ? bookingTeamIds[0] : null,
         orgId: null,
         isDryRun,
       });
